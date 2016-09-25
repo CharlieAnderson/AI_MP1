@@ -12,7 +12,7 @@ public class Main {
 	// write your code here
         File file = new File("med_maze.txt");
         List<List<point>> maze = readFile(file);
-        DFS(maze, start);
+        Greedy(maze, start, end);
     }
 
     private static List<List<point>> readFile(File file) {
@@ -160,14 +160,13 @@ public class Main {
 
     // TODO: finish logic to avoid repeated states
     private static void Greedy(List<List<point>> maze, point start, point end) {
-        Queue<point> queue = new LinkedList<point>();
         Queue<point> explored = new LinkedList<point>();
-        PriorityQueue<point> prio = new PriorityQueue<point>(0, new pointDistanceComparator());
-        queue.add(start);
+        PriorityQueue<point> prio = new PriorityQueue<point>(4, new pointDistanceComparator());
+        prio.add(start);
         point curr;
         int x,y,c;
-        while(!queue.isEmpty()) {
-            curr = (point)queue.remove();
+        while(!prio.isEmpty()) {
+            curr = (point)prio.remove();
             explored.add(curr);
             x = curr.x;
             y = curr.y;
@@ -180,7 +179,7 @@ public class Main {
                 break;
             }
             else {
-                prio = getClosest(maze, curr.x, curr.y, end, prio);
+                prio = getClosest(maze, curr.x, curr.y, end, prio, explored);
                 curr.visited = true;
                 curr.c = '@';
             }
@@ -200,19 +199,23 @@ public class Main {
     }
 
 
-    private static PriorityQueue<point> getClosest(List<List<point>> maze, int x, int y, point end, PriorityQueue<point> prio) {
+    private static PriorityQueue<point> getClosest(List<List<point>> maze, int x, int y, point end, PriorityQueue<point> prio, Queue explored ) {
+
+        // each time we add a node here, need to check if that node is already in the queue with a higher path cost
         point right = maze.get(x+1).get(y);
         point left = maze.get(x-1).get(y);
         point down = maze.get(x).get(y+1);
         point up = maze.get(x).get(y-1);
-        Queue queue = new LinkedList();
-
+        System.out.println("GETTING CLOSEST");
         double minDist = 999999;
         point currMin = right;
         if(right.c != '%') {
             double distRight = getDist(right, end);
             right.distance = distRight;
-            prio.add(right);
+            if(!explored.contains(right)) {
+                explored.add(right);
+                prio.add(right);
+            }
             if(distRight < minDist) {
                 minDist = distRight;
                 currMin = right;
@@ -221,7 +224,10 @@ public class Main {
         if(left.c != '%') {
             double distLeft = getDist(left, end);
             left.distance = distLeft;
-            prio.add(left);
+            if(!explored.contains(left)) {
+                explored.add(left);
+                prio.add(left);
+            }
             if (distLeft < minDist) {
                 minDist = distLeft;
                 currMin = left;
@@ -230,7 +236,10 @@ public class Main {
         if(down.c != '%') {
             double distDown = getDist(down, end);
             down.distance = distDown;
-            prio.add(down);
+            if(!explored.contains(down)) {
+                explored.add(down);
+                prio.add(down);
+            }
             if(distDown < minDist) {
                 minDist = distDown;
                 currMin = down;
@@ -239,7 +248,10 @@ public class Main {
         if(up.c != '%') {
             double distUp = getDist(up, end);
             up.distance = distUp;
-            prio.add(up);
+            if(!explored.contains(up)) {
+                explored.add(up);
+                prio.add(up);
+            }
             if(distUp < minDist) {
                 minDist = distUp;
                 currMin = up;
